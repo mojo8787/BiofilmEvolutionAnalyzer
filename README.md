@@ -3,7 +3,12 @@
 A comprehensive computational platform for integrating multi-omics data to predict bacterial phenotypes and identify regulatory mechanisms governing the biofilm-motility transition.
 
 ## Author
-Developed by **Almotasem Bellah Younis (Motasem)**
+Developed by **Almotasem Bellah Younis, PhD**
+
+LinkedIn | Twitter | ResearchGate  
+Email: motasem.youniss@gmail.com  
+Phone: +427 325 80600  
+Location: Veletržní 817/9, 603 00 Brno-střed, Czech Republic
 
 ![Bacterial Phenotype Space](https://raw.githubusercontent.com/placeholderusername/bacterial-omics-platform/main/static/phenotype_space.png)
 
