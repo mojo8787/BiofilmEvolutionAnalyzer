@@ -16,9 +16,11 @@ This platform integrates transcriptomics, Tn-Seq, and phenotypic data to provide
 - **Multi-Omics Data Integration**: Import and process transcriptomics, Tn-Seq, and phenotype data
 - **Interactive Data Exploration**: Visualize and analyze relationships between datasets
 - **Machine Learning Models**: Train and evaluate models to predict phenotypes from omics data
+- **Neural Network Support**: Implement deep learning models for complex phenotype prediction
 - **Regulatory Mechanism Discovery**: Identify key regulators using feature importance analysis
 - **Metabolic Modeling**: Explore resource allocation trade-offs using genome-scale metabolic models
 - **In Silico Evolution**: Simulate bacterial adaptation under different environmental conditions
+- **Automated Experiment Design**: Generate optimal experimental designs based on data gaps and research objectives
 
 ## Application Structure
 
@@ -31,12 +33,14 @@ The application is built using Streamlit and organized into the following compon
 │   ├── 2_Data_Exploration.py # Data visualization and exploration
 │   ├── 3_Machine_Learning.py # Phenotype prediction models
 │   ├── 4_Metabolic_Modeling.py # Metabolic analysis
-│   └── 5_Simulation.py     # In silico evolution simulations
+│   ├── 5_Simulation.py     # In silico evolution simulations
+│   └── 6_Experiment_Design.py # Automated experiment design
 ├── utils/                  # Utility functions
 │   ├── data_processing.py  # Data preprocessing functions
 │   ├── ml_models.py        # Machine learning model definitions
 │   ├── metabolic_models.py # Metabolic modeling functions
 │   ├── simulation.py       # Simulation related functionality
+│   ├── experiment_design.py # Experiment design algorithms
 │   └── visualization.py    # Plotting and visualization tools
 └── .streamlit/config.toml  # Streamlit configuration
 ```
@@ -53,6 +57,7 @@ The application is built using Streamlit and organized into the following compon
   - matplotlib
   - plotly
   - scikit-learn
+  - tensorflow
   - networkx
   - seaborn
   - cobra (for metabolic modeling)
@@ -119,6 +124,14 @@ Simulate bacterial evolution under different conditions:
 - Track phenotypic changes across generations
 - Identify adaptive mutations and compensatory mechanisms
 
+### 6. Experiment Design
+
+Generate optimized experimental designs to efficiently explore the phenotype space:
+- Create factorial and response surface designs for systematic exploration
+- Analyze knowledge gaps in existing experimental data
+- Generate optimal experiment sequences using Bayesian optimization
+- Produce experimental protocol templates for laboratory implementation
+
 ## Workflow Examples
 
 ### Example 1: Identify Key Regulators of Biofilm Formation
@@ -136,6 +149,14 @@ Simulate bacterial evolution under different conditions:
 3. Compare flux distributions between biofilm-forming and motile strains
 4. Identify key metabolic pathways involved in the phenotypic switch
 5. Simulate evolutionary trajectories under selective pressure
+
+### Example 3: Design Experiments to Test Regulatory Hypotheses
+
+1. Import existing experimental data and train initial models
+2. Use Experiment Design to identify knowledge gaps in the current dataset
+3. Generate an optimal sequence of experiments using Bayesian optimization
+4. Create a factorial design to test interactions between key regulators
+5. Export experimental protocols for laboratory implementation
 
 ## Future Enhancements
 
