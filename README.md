@@ -2,6 +2,9 @@
 
 A comprehensive computational platform for integrating multi-omics data to predict bacterial phenotypes and identify regulatory mechanisms governing the biofilm-motility transition.
 
+## Author
+Developed by **Almotasem Bellah Younis (Motasem)**
+
 ![Bacterial Phenotype Space](https://raw.githubusercontent.com/placeholderusername/bacterial-omics-platform/main/static/phenotype_space.png)
 
 ## Overview

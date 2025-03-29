@@ -13,6 +13,7 @@ st.set_page_config(
 
 # Main page content
 st.title("Multi-Omics Integration Platform for Bacterial Phenotype Prediction")
+st.caption("Developed by Almotasem Bellah Younis (Motasem)")
 
 st.markdown("""
 ## Welcome to the Bacterial Multi-Omics Analysis Platform
