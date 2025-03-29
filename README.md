@@ -5,7 +5,7 @@ A comprehensive computational platform for integrating multi-omics data to predi
 ## Author
 Developed by **Almotasem Bellah Younis, PhD**
 
-LinkedIn | Twitter | ResearchGate  
+[LinkedIn](https://www.linkedin.com/in/motasem-younis/) | [Twitter](https://twitter.com/motasemyounis) | [ResearchGate](https://www.researchgate.net/profile/Almotasem-Younis)  
 Email: motasem.youniss@gmail.com  
 Phone: +427 325 80600  
 Location: Veletržní 817/9, 603 00 Brno-střed, Czech Republic
