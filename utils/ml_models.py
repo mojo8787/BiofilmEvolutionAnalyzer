@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, Grad
 from sklearn.svm import SVC, SVR
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import shap
+# import shap - temporarily disabled
 
 def build_classifier(algorithm, tune_hyperparams=False):
     """
@@ -279,6 +279,7 @@ def feature_importance_plot(model, feature_names):
 def plot_shap_summary(explainer, shap_values, X, feature_names):
     """
     Create a SHAP summary plot for model interpretability.
+    This function is temporarily modified to work without SHAP dependency.
     
     Parameters:
     -----------
@@ -294,22 +295,14 @@ def plot_shap_summary(explainer, shap_values, X, feature_names):
     Returns:
     --------
     matplotlib.figure.Figure
-        The SHAP summary plot.
+        A placeholder figure when SHAP is not available.
     """
-    # Create a data frame with feature names for SHAP plotting
-    if isinstance(X, pd.DataFrame):
-        X_display = X
-    else:
-        X_display = pd.DataFrame(X, columns=feature_names)
-    
-    # Create figure
+    # Create a placeholder figure for now
     fig, ax = plt.subplots(figsize=(12, 8))
-    
-    # Create SHAP summary plot
-    shap.summary_plot(shap_values, X_display, plot_type="bar", show=False)
-    
-    # Get current figure
-    fig = plt.gcf()
+    ax.text(0.5, 0.5, "SHAP analysis is temporarily disabled due to package dependencies.",
+            horizontalalignment='center', verticalalignment='center',
+            transform=ax.transAxes, fontsize=14)
+    ax.set_axis_off()
     
     return fig
 

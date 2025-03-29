@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 # import shap - temporarily disabled
 import io
 from contextlib import redirect_stdout
-from utils.ml_models import build_classifier, build_regressor, feature_importance_plot, plot_confusion_matrix  # Removed plot_shap_summary
+from utils.ml_models import build_classifier, build_regressor, feature_importance_plot, plot_confusion_matrix, plot_shap_summary
 
 st.set_page_config(
     page_title="Machine Learning - Multi-Omics Platform",
