@@ -24,7 +24,7 @@ elucidate regulatory mechanisms, with a focus on biofilm versus motile phenotype
 
 1. **Data Integration** - Import and process transcriptomics, Tn-Seq, and phenotype data
 2. **Machine Learning Models** - Predict bacterial phenotypes from multi-omics data
-3. **Regulatory Mechanism Discovery** - Use SHAP to identify key regulators
+3. **Regulatory Mechanism Discovery** - Identify key regulators using feature importance
 4. **Metabolic Modeling** - Explore resource allocation trade-offs using genome-scale models
 5. **In Silico Evolution** - Simulate bacterial adaptation under different conditions
 6. **Experimental Validation** - Compare computational predictions with experimental results

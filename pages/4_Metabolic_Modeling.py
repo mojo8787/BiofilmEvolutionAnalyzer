@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 import io
-import cobra
-from cobra.flux_analysis import flux_variability_analysis, parsimonious, pfba
-from utils.metabolic_models import load_model, integrate_transcriptomics, integrate_tnseq, analyze_flux_distribution, plot_flux_map
+# import cobra - temporarily disabled
+# from cobra.flux_analysis import flux_variability_analysis, parsimonious, pfba
+# from utils.metabolic_models import load_model, integrate_transcriptomics, integrate_tnseq, analyze_flux_distribution, plot_flux_map
 
 st.set_page_config(
     page_title="Metabolic Modeling - Multi-Omics Platform",
@@ -53,25 +53,19 @@ with tab1:
         sbml_file = st.file_uploader("Upload SBML Model", type=["xml", "sbml"])
         
         if sbml_file is not None:
-            try:
-                # Load the model
-                with st.spinner("Loading model from SBML file..."):
-                    # Save file to temporary location
-                    sbml_content = sbml_file.read()
-                    temp_file = io.BytesIO(sbml_content)
-                    model = cobra.io.read_sbml_model(temp_file)
-                    st.session_state['metabolic_model'] = model
-                    st.success(f"Model loaded successfully: {model.id}")
-                    
-                    # Display basic model info
-                    st.subheader("Model Summary")
-                    st.write(f"Model ID: {model.id}")
-                    st.write(f"Number of reactions: {len(model.reactions)}")
-                    st.write(f"Number of metabolites: {len(model.metabolites)}")
-                    st.write(f"Number of genes: {len(model.genes)}")
-                    
-            except Exception as e:
-                st.error(f"Error loading model: {e}")
+            # COBRA functionality is temporarily disabled
+            st.warning("Model loading with COBRA is currently disabled. Please install the COBRApy package to enable this feature.")
+            st.info("""
+            When enabled, this feature would allow you to:
+            - Load metabolic models in SBML format
+            - Analyze the model structure and components
+            - Perform flux analyses
+            """)
+                
+            # Display placeholder info if SBML file was uploaded
+            if sbml_file is not None:
+                st.success(f"File uploaded: {sbml_file.name}")
+                st.info("COBRA functionality is needed to process this file.")
     else:
         # Pre-built models
         model_options = {
@@ -90,22 +84,16 @@ with tab1:
         )
         
         if st.button("Load Selected Model"):
-            try:
-                with st.spinner(f"Loading {selected_model} model from BiGG database..."):
-                    model = load_model(selected_model)
-                    st.session_state['metabolic_model'] = model
-                    st.success(f"Model loaded successfully: {model.id}")
-                    
-                    # Display basic model info
-                    st.subheader("Model Summary")
-                    st.write(f"Model ID: {model.id}")
-                    st.write(f"Number of reactions: {len(model.reactions)}")
-                    st.write(f"Number of metabolites: {len(model.metabolites)}")
-                    st.write(f"Number of genes: {len(model.genes)}")
-                    
-            except Exception as e:
-                st.error(f"Error loading model: {e}")
-                st.info("Network issue or model not available in BiGG database. Try uploading a custom model instead.")
+            # COBRA functionality is temporarily disabled
+            st.warning("Model loading with COBRA is currently disabled. Please install the COBRApy package to enable this feature.")
+            st.info(f"""
+            When enabled, this would load the {selected_model} model from the BiGG database.
+            
+            This would allow you to:
+            - Load metabolic models from standard databases
+            - Analyze the model structure and components
+            - Perform flux analyses
+            """)
     
     # Display model details if loaded
     if 'metabolic_model' in st.session_state:

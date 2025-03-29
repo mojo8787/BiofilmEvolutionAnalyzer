@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split, cross_val_score, GridSearc
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
-import shap
+# import shap - temporarily disabled
 import io
 from contextlib import redirect_stdout
-from utils.ml_models import build_classifier, build_regressor, feature_importance_plot, plot_shap_summary, plot_confusion_matrix
+from utils.ml_models import build_classifier, build_regressor, feature_importance_plot, plot_confusion_matrix  # Removed plot_shap_summary
 
 st.set_page_config(
     page_title="Machine Learning - Multi-Omics Platform",
@@ -363,115 +363,32 @@ if 'trained_model' in st.session_state:
     # SHAP Analysis Section
     st.header("5. SHAP Analysis for Model Interpretability")
     
-    if st.checkbox("Run SHAP analysis", value=False):
-        with st.spinner("Computing SHAP values (this may take a while)..."):
-            try:
-                # Extract the actual model from the pipeline
-                if hasattr(model, 'named_steps'):
-                    # Get the last step in the pipeline which should be the model
-                    model_name = list(model.named_steps.keys())[-1]
-                    model_component = model.named_steps[model_name]
-                else:
-                    model_component = model
-                
-                # Compute SHAP values
-                # For some models we need to use a specific explainer
-                if algorithm in ["Random Forest", "Gradient Boosting"]:
-                    explainer = shap.TreeExplainer(model_component)
-                    shap_values = explainer.shap_values(X_test)
-                    
-                    # For multi-class, shap_values is a list of arrays
-                    if problem_type == "Classification" and isinstance(shap_values, list):
-                        if len(shap_values) > 1:  # Multi-class
-                            st.write("Displaying SHAP values for class 1")
-                            shap_values_display = shap_values[1]
-                        else:  # Binary with single output
-                            shap_values_display = shap_values[0]
-                    else:
-                        shap_values_display = shap_values
-                    
-                    # Plot SHAP summary
-                    st.subheader("SHAP Summary Plot")
-                    summary_fig = plot_shap_summary(explainer, shap_values_display, X_test, feature_names)
-                    st.pyplot(summary_fig)
-                    
-                    # SHAP dependence plots
-                    st.subheader("SHAP Dependence Plots")
-                    top_features = np.argsort(np.abs(shap_values_display).mean(0))[-5:]
-                    
-                    for feature_idx in top_features:
-                        feature_name = feature_names[feature_idx]
-                        fig, ax = plt.subplots(figsize=(10, 6))
-                        shap.dependence_plot(feature_idx, shap_values_display, X_test, 
-                                            feature_names=feature_names, ax=ax, show=False)
-                        plt.title(f"SHAP Dependence Plot for {feature_name}")
-                        st.pyplot(fig)
-                        plt.close(fig)
-                    
-                    # SHAP force plot for sample predictions
-                    st.subheader("SHAP Force Plots for Sample Predictions")
-                    sample_indices = st.multiselect(
-                        "Select samples to explain",
-                        options=list(range(len(X_test))),
-                        default=[0]
-                    )
-                    
-                    for idx in sample_indices:
-                        st.write(f"Sample {idx} explanation:")
-                        if problem_type == "Classification":
-                            if isinstance(shap_values, list):
-                                # For multi-class, show the class with the highest prediction
-                                pred_class = int(y_pred[idx])
-                                values = shap_values[pred_class][idx]
-                            else:
-                                values = shap_values[idx]
-                        else:
-                            values = shap_values[idx]
-                        
-                        # Create force plot
-                        force_plot = shap.force_plot(
-                            explainer.expected_value[1] if isinstance(explainer.expected_value, np.ndarray) else explainer.expected_value,
-                            values,
-                            X_test.iloc[idx],
-                            feature_names=feature_names,
-                            matplotlib=True,
-                            show=False
-                        )
-                        st.pyplot(force_plot)
-                
-                else:
-                    # For other models use KernelExplainer
-                    # This is computationally expensive, so we'll use a subset of the data
-                    sample_size = min(50, len(X_test))
-                    X_test_sample = X_test.iloc[:sample_size]
-                    
-                    explainer = shap.KernelExplainer(model.predict, shap.sample(X_train, 100))
-                    shap_values = explainer.shap_values(X_test_sample)
-                    
-                    # Plot SHAP summary
-                    st.subheader("SHAP Summary Plot")
-                    summary_fig = plot_shap_summary(explainer, shap_values, X_test_sample, feature_names)
-                    st.pyplot(summary_fig)
-                    
-                    st.info("For non-tree models, detailed SHAP analysis is limited due to computational constraints.")
-                
-                # Regulatory insights
-                st.subheader("Potential Regulatory Insights")
-                st.markdown("""
-                Based on the SHAP analysis, the features with the highest impact on predictions may represent 
-                important regulatory elements in the biofilm vs. motile phenotype transition. 
-                
-                These could include:
-                - Transcription factors controlling biofilm formation
-                - Genes involved in c-di-GMP signaling
-                - Two-component systems responding to environmental cues
-                
-                Consider these high-impact features as candidates for experimental validation.
-                """)
-                
-            except Exception as e:
-                st.error(f"Error in SHAP analysis: {e}")
-                st.write("SHAP analysis may not be supported for this model type or with the current data structure.")
+    st.info("""
+    SHAP (SHapley Additive exPlanations) analysis is temporarily disabled in this deployment.
+    
+    When enabled, this feature would help you:
+    - Understand how each feature contributes to model predictions
+    - Identify the most important features across your dataset
+    - Visualize complex interactions between features
+    """)
+    
+    if st.checkbox("Run SHAP analysis (currently disabled)", value=False):
+        st.warning("SHAP analysis is currently disabled due to package dependencies. Please install the SHAP package to enable this feature.")
+        
+        # Show example of what SHAP would provide
+        st.subheader("Example: Potential Regulatory Insights")
+        st.markdown("""
+        SHAP analysis would help identify the features with the highest impact on predictions that may represent 
+        important regulatory elements in the biofilm vs. motile phenotype transition.
+        
+        These could include:
+        - Transcription factors controlling biofilm formation
+        - Genes involved in c-di-GMP signaling
+        - Two-component systems responding to environmental cues
+        
+        With SHAP, you could visualize how these features contribute to specific predictions and identify patterns
+        that may not be obvious from traditional feature importance plots.
+        """)
 
     # Model export option
     st.header("6. Export Model and Results")
