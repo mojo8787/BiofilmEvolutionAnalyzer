@@ -11,7 +11,10 @@ from sklearn.pipeline import Pipeline
 # import shap - temporarily disabled
 import io
 from contextlib import redirect_stdout
-from utils.ml_models import build_classifier, build_regressor, feature_importance_plot, plot_confusion_matrix, plot_shap_summary
+from utils.ml_models import (
+    build_classifier, build_regressor, feature_importance_plot, 
+    plot_confusion_matrix, plot_shap_summary, get_neural_network_feature_importance
+)
 
 st.set_page_config(
     page_title="Machine Learning - Multi-Omics Platform",
@@ -236,15 +239,35 @@ st.write(f"Testing set: {X_test.shape[0]} samples")
 if problem_type == "Classification":
     algorithm = st.selectbox(
         "Select classification algorithm",
-        options=["Random Forest", "Gradient Boosting", "Support Vector Machine", "Logistic Regression"],
+        options=["Random Forest", "Gradient Boosting", "Support Vector Machine", "Logistic Regression", "Neural Network"],
         index=0
     )
 else:  # Regression
     algorithm = st.selectbox(
         "Select regression algorithm",
-        options=["Random Forest", "Gradient Boosting", "Support Vector Machine", "Linear Regression"],
+        options=["Random Forest", "Gradient Boosting", "Support Vector Machine", "Linear Regression", "Neural Network"],
         index=0
     )
+
+# Neural Network specific options
+nn_params = {}
+if algorithm == "Neural Network":
+    st.subheader("Neural Network Configuration")
+    nn_params['input_dim'] = X.shape[1]  # Number of features
+    
+    if problem_type == "Classification":
+        # For classification, determine if binary or multi-class
+        unique_classes = np.unique(y)
+        if len(unique_classes) == 2:
+            nn_params['binary'] = True
+            st.info("Binary classification detected. Using a binary classification neural network.")
+        else:
+            nn_params['binary'] = False
+            nn_params['num_classes'] = len(unique_classes)
+            st.info(f"Multi-class classification detected with {len(unique_classes)} classes.")
+    
+    # Additional neural network hyperparameters could be added here
+    st.info("Neural network will use early stopping to prevent overfitting.")
 
 # Hyperparameter tuning option
 tune_hyperparams = st.checkbox("Tune hyperparameters (may take time)", value=False)
@@ -254,9 +277,15 @@ if st.button("Train Model"):
     with st.spinner("Training model..."):
         # Create pipeline with preprocessing and model
         if problem_type == "Classification":
-            model_pipeline = build_classifier(algorithm, tune_hyperparams)
+            if algorithm == "Neural Network":
+                model_pipeline = build_classifier(algorithm, tune_hyperparams, **nn_params)
+            else:
+                model_pipeline = build_classifier(algorithm, tune_hyperparams)
         else:  # Regression
-            model_pipeline = build_regressor(algorithm, tune_hyperparams)
+            if algorithm == "Neural Network":
+                model_pipeline = build_regressor(algorithm, tune_hyperparams, **nn_params)
+            else:
+                model_pipeline = build_regressor(algorithm, tune_hyperparams)
         
         # Fit the model
         model_pipeline.fit(X_train, y_train)
@@ -345,8 +374,52 @@ if 'trained_model' in st.session_state:
         
         # Feature importance
         feature_names = st.session_state['feature_names']
-        importance_fig = feature_importance_plot(model, feature_names)
-        st.pyplot(importance_fig)
+        algorithm = st.session_state['algorithm']
+        
+        if algorithm == "Neural Network":
+            st.info("""
+            Neural networks don't provide direct feature importance metrics like tree-based models.
+            For neural networks, we compute feature importance using permutation importance,
+            which measures how model performance decreases when a feature is randomly shuffled.
+            """)
+            
+            # For neural networks, we could calculate permutation importance, but it can be time-consuming
+            # So we'll provide a button to compute it on demand
+            if st.button("Calculate Neural Network Feature Importance (may take time)"):
+                with st.spinner("Computing permutation importance for neural network..."):
+                    try:
+                        # Get the trained model component
+                        if hasattr(model, 'named_steps'):
+                            model_name = list(model.named_steps.keys())[-1]
+                            model_component = model.named_steps[model_name]
+                            
+                            # Get feature importance for neural network
+                            X_test_np = X_test.values
+                            y_test_np = y_test.values
+                            
+                            # Use our custom function for neural network feature importance
+                            if problem_type == "Classification":
+                                importances = get_neural_network_feature_importance(model, X_test_np, y_test_np, feature_names)
+                                st.session_state['nn_importances'] = importances
+                                
+                                # Create a DataFrame for visualization
+                                imp_df = pd.DataFrame({
+                                    'Feature': feature_names,
+                                    'Importance': importances
+                                }).sort_values('Importance', ascending=False).head(20)
+                                
+                                # Plot the importance
+                                fig, ax = plt.subplots(figsize=(10, 8))
+                                ax.barh(imp_df['Feature'], imp_df['Importance'])
+                                ax.set_title('Neural Network Feature Importance (Permutation Method)')
+                                st.pyplot(fig)
+                            else:
+                                st.warning("Permutation importance for regression neural networks is not implemented yet.")
+                    except Exception as e:
+                        st.error(f"Error computing feature importance: {str(e)}")
+        else:
+            importance_fig = feature_importance_plot(model, feature_names)
+            st.pyplot(importance_fig)
         
         # Cross-validation
         st.subheader("Cross-Validation")

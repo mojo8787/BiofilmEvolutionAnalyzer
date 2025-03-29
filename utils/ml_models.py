@@ -10,7 +10,15 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 # import shap - temporarily disabled
 
-def build_classifier(algorithm, tune_hyperparams=False):
+# Import TensorFlow and Keras
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier, KerasRegressor
+
+def build_classifier(algorithm, tune_hyperparams=False, input_dim=None, binary=True, num_classes=None):
     """
     Build a classification pipeline with preprocessing and model.
     
@@ -20,6 +28,12 @@ def build_classifier(algorithm, tune_hyperparams=False):
         The classification algorithm to use.
     tune_hyperparams : bool
         Whether to perform hyperparameter tuning.
+    input_dim : int, optional
+        Number of input features (required for neural networks).
+    binary : bool, optional
+        Whether it's a binary classification problem (for neural networks).
+    num_classes : int, optional
+        Number of classes for multi-class classification (for neural networks).
     
     Returns:
     --------
@@ -114,6 +128,12 @@ def build_classifier(algorithm, tune_hyperparams=False):
                 random_state=42
             )
     
+    elif algorithm == "Neural Network":
+        if input_dim is None:
+            raise ValueError("Input dimension is required for neural networks")
+        
+        model = build_neural_network_classifier(input_dim, binary, num_classes)
+        
     else:
         raise ValueError(f"Unsupported classification algorithm: {algorithm}")
     
@@ -121,7 +141,7 @@ def build_classifier(algorithm, tune_hyperparams=False):
     
     return Pipeline(steps)
 
-def build_regressor(algorithm, tune_hyperparams=False):
+def build_regressor(algorithm, tune_hyperparams=False, input_dim=None):
     """
     Build a regression pipeline with preprocessing and model.
     
@@ -131,6 +151,8 @@ def build_regressor(algorithm, tune_hyperparams=False):
         The regression algorithm to use.
     tune_hyperparams : bool
         Whether to perform hyperparameter tuning.
+    input_dim : int, optional
+        Number of input features (required for neural networks).
     
     Returns:
     --------
@@ -205,6 +227,12 @@ def build_regressor(algorithm, tune_hyperparams=False):
     elif algorithm == "Linear Regression":
         # Linear regression has few hyperparameters to tune
         model = LinearRegression()
+    
+    elif algorithm == "Neural Network":
+        if input_dim is None:
+            raise ValueError("Input dimension is required for neural networks")
+        
+        model = build_neural_network_regressor(input_dim)
     
     else:
         raise ValueError(f"Unsupported regression algorithm: {algorithm}")
@@ -333,6 +361,186 @@ def plot_confusion_matrix(y_true, y_pred):
     
     plt.tight_layout()
     return fig
+
+# Define neural network model builder functions
+def create_binary_classifier_nn(input_dim):
+    """
+    Create a neural network model for binary classification.
+    
+    Parameters:
+    -----------
+    input_dim : int
+        Number of input features.
+    
+    Returns:
+    --------
+    tensorflow.keras.models.Sequential
+        The neural network model.
+    """
+    model = Sequential([
+        Dense(64, activation='relu', input_shape=(input_dim,)),
+        Dropout(0.2),
+        Dense(32, activation='relu'),
+        Dropout(0.2),
+        Dense(16, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+    
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    
+    return model
+
+def create_multiclass_classifier_nn(input_dim, num_classes):
+    """
+    Create a neural network model for multi-class classification.
+    
+    Parameters:
+    -----------
+    input_dim : int
+        Number of input features.
+    num_classes : int
+        Number of classes to predict.
+    
+    Returns:
+    --------
+    tensorflow.keras.models.Sequential
+        The neural network model.
+    """
+    model = Sequential([
+        Dense(128, activation='relu', input_shape=(input_dim,)),
+        Dropout(0.3),
+        Dense(64, activation='relu'),
+        Dropout(0.3),
+        Dense(32, activation='relu'),
+        Dense(num_classes, activation='softmax')
+    ])
+    
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    
+    return model
+
+def create_regression_nn(input_dim):
+    """
+    Create a neural network model for regression.
+    
+    Parameters:
+    -----------
+    input_dim : int
+        Number of input features.
+    
+    Returns:
+    --------
+    tensorflow.keras.models.Sequential
+        The neural network model.
+    """
+    model = Sequential([
+        Dense(64, activation='relu', input_shape=(input_dim,)),
+        Dropout(0.2),
+        Dense(32, activation='relu'),
+        Dropout(0.2),
+        Dense(16, activation='relu'),
+        Dense(1, activation='linear')
+    ])
+    
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss='mean_squared_error',
+        metrics=['mean_absolute_error']
+    )
+    
+    return model
+
+def build_neural_network_classifier(input_dim, binary=True, num_classes=None):
+    """
+    Build a neural network classifier model.
+    
+    Parameters:
+    -----------
+    input_dim : int
+        Number of input features.
+    binary : bool
+        Whether it's a binary classification problem.
+    num_classes : int, optional
+        Number of classes for multi-class classification.
+    
+    Returns:
+    --------
+    tf.keras.wrappers.scikit_learn.KerasClassifier
+        Scikit-learn compatible neural network classifier.
+    """
+    if binary:
+        return KerasClassifier(
+            build_fn=lambda: create_binary_classifier_nn(input_dim),
+            epochs=50,
+            batch_size=32,
+            verbose=0,
+            callbacks=[EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
+        )
+    else:
+        return KerasClassifier(
+            build_fn=lambda: create_multiclass_classifier_nn(input_dim, num_classes),
+            epochs=50,
+            batch_size=32,
+            verbose=0,
+            callbacks=[EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
+        )
+
+def build_neural_network_regressor(input_dim):
+    """
+    Build a neural network regressor model.
+    
+    Parameters:
+    -----------
+    input_dim : int
+        Number of input features.
+    
+    Returns:
+    --------
+    tf.keras.wrappers.scikit_learn.KerasRegressor
+        Scikit-learn compatible neural network regressor.
+    """
+    return KerasRegressor(
+        build_fn=lambda: create_regression_nn(input_dim),
+        epochs=50,
+        batch_size=32,
+        verbose=0,
+        callbacks=[EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)]
+    )
+
+def get_neural_network_feature_importance(model, X, y, feature_names):
+    """
+    Get feature importance for neural networks using permutation importance.
+    
+    Parameters:
+    -----------
+    model : tf.keras.Model
+        Trained neural network model.
+    X : numpy.ndarray
+        Feature matrix.
+    y : numpy.ndarray
+        Target values.
+    feature_names : list
+        List of feature names.
+    
+    Returns:
+    --------
+    numpy.ndarray
+        Array of feature importance scores.
+    """
+    from sklearn.inspection import permutation_importance
+    
+    # Perform permutation importance calculation
+    r = permutation_importance(model, X, y, n_repeats=10, random_state=42)
+    
+    return r.importances_mean
 
 def get_regulatory_insights(model, feature_names, top_n=20):
     """
