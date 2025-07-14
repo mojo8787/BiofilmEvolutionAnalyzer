@@ -11,12 +11,31 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 # import shap - temporarily disabled
 
 # Import TensorFlow and Keras
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier, KerasRegressor
+try:
+    import tensorflow as tf
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import Dense, Dropout
+    from tensorflow.keras.optimizers import Adam
+    from tensorflow.keras.callbacks import EarlyStopping
+    from tensorflow.keras.wrappers.scikit_learn import KerasClassifier, KerasRegressor
+    TENSORFLOW_AVAILABLE = True
+except ImportError:  # TensorFlow not installed (e.g., Python 3.13 or arm64 without wheel)
+    TENSORFLOW_AVAILABLE = False
+
+    # Create lightweight placeholders so that the rest of the code can be imported
+    class _TFPlaceholder:  # pylint: disable=too-few-public-methods
+        """Dummy class used when TensorFlow is unavailable."""
+
+        def __getattr__(self, item):
+            raise ImportError(
+                "TensorFlow is required for neural-network models. "
+                "Install it with `pip install tensorflow==2.15` (Py<=3.12) "
+                "or `pip install tensorflow-macos` on Apple-silicon, "
+                "then restart the app."
+            )
+
+    tf = _TFPlaceholder()  # type: ignore
+    Sequential = Dense = Dropout = Adam = EarlyStopping = KerasClassifier = KerasRegressor = _TFPlaceholder()
 
 def build_classifier(algorithm, tune_hyperparams=False, input_dim=None, binary=True, num_classes=None):
     """
@@ -476,6 +495,11 @@ def build_neural_network_classifier(input_dim, binary=True, num_classes=None):
     tf.keras.wrappers.scikit_learn.KerasClassifier
         Scikit-learn compatible neural network classifier.
     """
+    if not TENSORFLOW_AVAILABLE:
+        raise ImportError(
+            "Neural network models require TensorFlow, which is not installed in this environment."
+        )
+
     if binary:
         return KerasClassifier(
             build_fn=lambda: create_binary_classifier_nn(input_dim),
@@ -507,6 +531,11 @@ def build_neural_network_regressor(input_dim):
     tf.keras.wrappers.scikit_learn.KerasRegressor
         Scikit-learn compatible neural network regressor.
     """
+    if not TENSORFLOW_AVAILABLE:
+        raise ImportError(
+            "Neural network models require TensorFlow, which is not installed in this environment."
+        )
+
     return KerasRegressor(
         build_fn=lambda: create_regression_nn(input_dim),
         epochs=50,
