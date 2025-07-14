@@ -116,3 +116,51 @@ port = 5000
 ```
 
 This configuration ensures the application is accessible and performs properly.
+
+## Running in a Virtual Environment (Recommended)
+
+If you are using a Homebrew-managed Python 3.13 on macOS (or any system where *pip* is "externally-managed" per [PEP 668](https://peps.python.org/pep-0668/)), you **must** create a virtual environment before installing the requirements.
+
+```bash
+# 1. From the project root
+python3 -m venv .venv           # create venv in place
+
+# 2. Activate it (macOS/Linux-bash/zsh)
+source .venv/bin/activate
+
+# PowerShell (Windows)
+# .venv\Scripts\Activate.ps1
+
+# 3. Install Python packages
+pip install -r requirements.txt       # installs everything listed
+
+#   └─ Note: TensorFlow wheels are not yet available for Python 3.13.
+#            If you need the ML pages that rely on TensorFlow, use
+#            Python 3.11 or 3.12, or comment-out the TF import lines.
+
+# 4. Launch Streamlit from inside the venv
+streamlit run app.py
+```
+
+### Fixing missing-module errors at runtime
+
+If, after launching Streamlit, you see errors such as:
+
+```
+ModuleNotFoundError: No module named 'plotly'
+```
+
+it means that the dependency wasn’t installed inside your current environment.  Make sure you’re *inside* the venv (prompt should be prefixed by `(.venv)`), then install the module manually:
+
+```bash
+pip install plotly scikit-learn matplotlib
+```
+
+### Apple-silicon notes (M-series Macs)
+TensorFlow official wheels are still experimental for arm64/py>3.11.  Until an official wheel is released, the **Machine Learning** page that calls TensorFlow will raise `ModuleNotFoundError`.  Two work-arounds:
+
+1. Create your virtual environment with Python 3.11 and run `pip install tensorflow-macos`.
+2. Disable the TensorFlow-specific features by commenting out lines that import or call `tensorflow` in `utils/ml_models.py` and the relevant pages.
+
+---
+These steps match precisely what we executed during the live debug session, so you can reproduce a working setup from scratch.
