@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Biofilm Evolution Analyzer: A Multi-Omics Integration Platform"
+message: "If you use this software, please cite it as below."
+version: "1.0.0"
+authors:
+  - family-names: "Younis"
+    given-names: "Almotasem Bellah"
+    orcid: "https://orcid.org/0000-0002-0000-0000"
+date-released: "2025-07-14"
+license: "MIT"
+repository-code: "https://github.com/yourusername/bacterial-omics-platform" 
